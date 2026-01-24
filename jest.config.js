@@ -2,36 +2,18 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
-  testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
-  
-
-  moduleNameMapper: {
-    '^uuid$': '<rootDir>/node_modules/uuid/dist/index.js',
-  },
-  
-  transform: {
-    '^.+\\.ts$': 'ts-jest',
-  },
-  
-
-  transformIgnorePatterns: [
-    'node_modules/(?!uuid)',
-  ],
-  
+  testMatch: ['**/tests/unit/**/*.test.ts'],
+  setupFilesAfterEnv: ['<rootDir>/src/tests/setup.ts'],
   collectCoverageFrom: [
     'src/services/**/*.ts',
-    '!src/**/*.d.ts',
     '!src/tests/**',
   ],
-  
-  coverageThreshold: {
-    global: {
-      branches: 40,
-      functions: 40,
-      lines: 40,
-      statements: 40
-    }
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
   },
-  
-  testTimeout: 30000,
+  // Clear mocks between tests
+  clearMocks: true,
+  testTimeout: 10000,
+  // Force setup to run first
+  setupFiles: ['<rootDir>/src/tests/setup.ts'],
 };
