@@ -8,7 +8,7 @@ const router = Router();
 const walletController = new WalletController();
 const authMiddleware = new AuthMiddleware();
 
-// All wallet routes require authentication
+
 router.use(authMiddleware.authenticate.bind(authMiddleware));
 
 router.get('/balance', walletController.getBalance);

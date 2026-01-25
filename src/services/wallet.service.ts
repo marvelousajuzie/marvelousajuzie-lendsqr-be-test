@@ -23,7 +23,7 @@ export class WalletService {
     const trx = await db.transaction();
 
     try {
-      // Create transaction record
+
       const reference = Helpers.generateReference('FUND');
       const transaction = await TransactionModel.create({
         wallet_id: wallet.id,

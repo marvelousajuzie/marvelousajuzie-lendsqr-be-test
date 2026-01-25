@@ -20,13 +20,12 @@ export class AuthService {
     last_name: string;
     phone_number: string;
   }): Promise<{ user: Partial<IUser>; token: string }> {
-    // Check if email already exists
+  
     const existingUser = await UserModel.findByEmail(userData.email);
     if (existingUser) {
       throw new Error('Email already registered');
     }
 
-    // Check Karma blacklist
     const isBlacklisted = await this.karmaService.checkBlacklist(userData.email);
     if (isBlacklisted) {
       throw new Error('User is blacklisted and cannot be onboarded');
