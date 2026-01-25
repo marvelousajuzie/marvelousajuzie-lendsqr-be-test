@@ -19,6 +19,7 @@ class WalletService {
         }
         const trx = await database_1.default.transaction();
         try {
+            // Create transaction record
             const reference = helpers_util_1.Helpers.generateReference('FUND');
             const transaction = await transaction_model_1.TransactionModel.create({
                 wallet_id: wallet.id,
@@ -29,7 +30,9 @@ class WalletService {
                 status: 'pending',
                 metadata: { type: 'funding' },
             });
+            // Update wallet balance
             await wallet_model_1.WalletModel.updateBalance(wallet.id, amount, 'increment');
+            // Update transaction status
             await transaction_model_1.TransactionModel.updateStatus(transaction.id, 'success');
             await trx.commit();
             return await transaction_model_1.TransactionModel.findById(transaction.id);
@@ -43,27 +46,33 @@ class WalletService {
         if (amount <= 0) {
             throw new Error('Amount must be greater than zero');
         }
+        // Get sender wallet
         const senderWallet = await wallet_model_1.WalletModel.findByUserId(senderId);
         if (!senderWallet) {
             throw new Error('Sender wallet not found');
         }
+        // Check sufficient balance
         if (senderWallet.balance < amount) {
             throw new Error('Insufficient balance');
         }
+        // Find recipient by email
         const recipientUser = await (0, database_1.default)('users').where({ email: recipientEmail }).first();
         if (!recipientUser) {
             throw new Error('Recipient not found');
         }
+        // Get recipient wallet
         const recipientWallet = await wallet_model_1.WalletModel.findByUserId(recipientUser.id);
         if (!recipientWallet) {
             throw new Error('Recipient wallet not found');
         }
+        // Cannot transfer to self
         if (senderId === recipientUser.id) {
             throw new Error('Cannot transfer to yourself');
         }
         const trx = await database_1.default.transaction();
         const reference = helpers_util_1.Helpers.generateReference('TRF');
         try {
+            // Create debit transaction for sender
             const debitTransaction = await transaction_model_1.TransactionModel.create({
                 wallet_id: senderWallet.id,
                 transaction_type: 'debit',
@@ -73,6 +82,7 @@ class WalletService {
                 status: 'pending',
                 metadata: { recipient_email: recipientEmail, type: 'transfer_debit' },
             });
+            // Create credit transaction for recipient
             const creditTransaction = await transaction_model_1.TransactionModel.create({
                 wallet_id: recipientWallet.id,
                 transaction_type: 'credit',
@@ -82,8 +92,11 @@ class WalletService {
                 status: 'pending',
                 metadata: { sender_id: senderId, type: 'transfer_credit' },
             });
+            // Update sender balance (decrement)
             await wallet_model_1.WalletModel.updateBalance(senderWallet.id, amount, 'decrement');
+            // Update recipient balance (increment)
             await wallet_model_1.WalletModel.updateBalance(recipientWallet.id, amount, 'increment');
+            // Update transaction statuses
             await transaction_model_1.TransactionModel.updateStatus(debitTransaction.id, 'success');
             await transaction_model_1.TransactionModel.updateStatus(creditTransaction.id, 'success');
             await trx.commit();
@@ -105,11 +118,13 @@ class WalletService {
         if (!wallet) {
             throw new Error('Wallet not found');
         }
+        // Check sufficient balance
         if (wallet.balance < amount) {
             throw new Error('Insufficient balance');
         }
         const trx = await database_1.default.transaction();
         try {
+            // Create transaction record
             const reference = helpers_util_1.Helpers.generateReference('WTD');
             const transaction = await transaction_model_1.TransactionModel.create({
                 wallet_id: wallet.id,
@@ -120,7 +135,9 @@ class WalletService {
                 status: 'pending',
                 metadata: { type: 'withdrawal' },
             });
+            // Update wallet balance
             await wallet_model_1.WalletModel.updateBalance(wallet.id, amount, 'decrement');
+            // Update transaction status
             await transaction_model_1.TransactionModel.updateStatus(transaction.id, 'success');
             await trx.commit();
             return await transaction_model_1.TransactionModel.findById(transaction.id);

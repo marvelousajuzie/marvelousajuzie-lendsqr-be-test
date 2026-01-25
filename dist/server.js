@@ -17,7 +17,7 @@ database_1.default.raw('SELECT 1')
     });
 })
     .catch((error) => {
-    console.error('❌ Database connection failed:', error);
+    console.error('❌ Database connection failed:', error.message);
     process.exit(1);
 });
 process.on('SIGINT', async () => {

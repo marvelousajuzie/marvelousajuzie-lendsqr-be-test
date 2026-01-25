@@ -15,6 +15,7 @@ class AuthService {
         this.karmaService = new karma_service_1.KarmaService();
     }
     async register(userData) {
+        // Check if email already exists
         const existingUser = await user_model_1.UserModel.findByEmail(userData.email);
         if (existingUser) {
             throw new Error('Email already registered');
@@ -24,30 +25,40 @@ class AuthService {
         if (isBlacklisted) {
             throw new Error('User is blacklisted and cannot be onboarded');
         }
+        // Hash password
         const hashedPassword = await bcryptjs_1.default.hash(userData.password, 10);
+        // Create user
         const user = await user_model_1.UserModel.create({
             ...userData,
             password: hashedPassword,
             is_blacklisted: false,
         });
+        // Create wallet for user
         await wallet_model_1.WalletModel.create(user.id);
+        // Generate JWT token
         const token = this.generateToken(user.id, user.email);
+        // Remove password from response
         const { password, ...userWithoutPassword } = user;
         return { user: userWithoutPassword, token };
     }
     async login(email, password) {
+        // Find user
         const user = await user_model_1.UserModel.findByEmail(email);
         if (!user) {
             throw new Error('Invalid credentials');
         }
+        // Check if blacklisted
         if (user.is_blacklisted) {
             throw new Error('Account is blacklisted');
         }
+        // Verify password
         const isPasswordValid = await bcryptjs_1.default.compare(password, user.password);
         if (!isPasswordValid) {
             throw new Error('Invalid credentials');
         }
+        // Generate token
         const token = this.generateToken(user.id, user.email);
+        // Remove password from response
         const { password: _, ...userWithoutPassword } = user;
         return { user: userWithoutPassword, token };
     }
