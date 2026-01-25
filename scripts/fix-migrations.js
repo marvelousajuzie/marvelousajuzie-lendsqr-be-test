@@ -15,18 +15,15 @@ async function fixMigrations() {
   });
 
   try {
-    console.log('Fixing migration records...');
+    console.log('Resetting migration records...');
     
-    // Update .ts extensions to .js
-    await connection.query(`
-      UPDATE knex_migrations 
-      SET name = REPLACE(name, '.ts', '.js')
-      WHERE name LIKE '%.ts'
-    `);
+    // Drop and recreate the migration tracking tables
+    await connection.query('DROP TABLE IF EXISTS knex_migrations_lock');
+    await connection.query('DROP TABLE IF EXISTS knex_migrations');
     
-    console.log('Migration records fixed successfully!');
+    console.log('Migration records reset successfully!');
   } catch (error) {
-    console.log('No migration table found yet, skipping fix...');
+    console.log('Error resetting migrations:', error.message);
   } finally {
     await connection.end();
   }
