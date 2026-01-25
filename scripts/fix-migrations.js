@@ -15,15 +15,18 @@ async function fixMigrations() {
   });
 
   try {
-    console.log('Resetting migration records...');
+    console.log('Dropping all tables...');
     
-    // Drop and recreate the migration tracking tables
+    // Drop all tables in the correct order (foreign keys first)
+    await connection.query('DROP TABLE IF EXISTS transactions');
+    await connection.query('DROP TABLE IF EXISTS wallets');
+    await connection.query('DROP TABLE IF EXISTS users');
     await connection.query('DROP TABLE IF EXISTS knex_migrations_lock');
     await connection.query('DROP TABLE IF EXISTS knex_migrations');
     
-    console.log('Migration records reset successfully!');
+    console.log('All tables dropped successfully! Migrations will recreate them.');
   } catch (error) {
-    console.log('Error resetting migrations:', error.message);
+    console.log('Error dropping tables:', error.message);
   } finally {
     await connection.end();
   }
