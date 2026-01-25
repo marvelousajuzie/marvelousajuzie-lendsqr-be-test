@@ -1,5 +1,6 @@
 import type { Knex } from 'knex';
 import dotenv from 'dotenv';
+import path from 'path';
 
 dotenv.config();
 
@@ -15,7 +16,7 @@ const config: { [key: string]: Knex.Config } = {
       ssl: process.env.DB_HOST?.includes('psdb.cloud') ? { rejectUnauthorized: true } : undefined,
     },
     migrations: {
-      directory: './src/database/migrations',
+      directory: path.join(__dirname, '../database/migrations'),
       extension: 'ts',
       tableName: 'knex_migrations',
     },
@@ -37,7 +38,7 @@ const config: { [key: string]: Knex.Config } = {
       ssl: { rejectUnauthorized: true },
     },
     migrations: {
-      directory: './dist/database/migrations',
+      directory: path.join(__dirname, '../database/migrations'),
       extension: 'js',
       tableName: 'knex_migrations',
     },
