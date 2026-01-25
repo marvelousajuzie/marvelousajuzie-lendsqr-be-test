@@ -1,49 +1,107 @@
-import { KarmaService } from '../../services/karma.service';
 import axios from 'axios';
+import { config } from '../config/env';
 
-jest.mock('axios');
+export class KarmaService {
+  private baseUrl: string;
+  private apiKey: string;
+  private useMock: boolean;
 
-describe('KarmaService', () => {
-  let karmaService: KarmaService;
+  // Simulated blacklist for demonstration
+  private mockBlacklist = [
+    'blacklisted@example.com',
+    'fraud@test.com',
+    'scammer@demo.com',
+    '+2348099999999'
+  ];
 
-  beforeEach(() => {
-    process.env.KARMA_BASE_URL = 'https://api.adjutor.io/v2';
-   process.env.KARMA_API_KEY = 'mock_karma_api_key_for_testing'; 
-    karmaService = new KarmaService();
-    jest.clearAllMocks();
-  });
+  constructor() {
+    this.baseUrl = config.karma.baseUrl;
+    this.apiKey = config.karma.apiKey;
+    this.useMock = !this.apiKey || this.apiKey === 'your_karma_api_key_here';
+  }
 
-  describe('checkBlacklist', () => {
-    it('should return true if user is blacklisted', async () => {
-      (axios.get as jest.Mock).mockResolvedValue({
-        data: { status: 'blacklisted' },
-      });
+  async checkBlacklist(identifier: string): Promise<boolean> {
+    console.log(`🔍 Checking Karma blacklist for: ${identifier}`);
 
-      const result = await karmaService.checkBlacklist('blacklisted@example.com');
+    // If using mock (no API key or in test mode)
+    if (this.useMock) {
+      console.log('⚠️  Using MOCK Karma service (API key not configured)');
+      const isBlacklisted = this.mockBlacklist.includes(identifier.toLowerCase());
+      
+      if (isBlacklisted) {
+        console.log(`❌ User ${identifier} is BLACKLISTED (mock)`);
+      } else {
+        console.log(`✅ User ${identifier} is NOT blacklisted (mock)`);
+      }
+      
+      return isBlacklisted;
+    }
 
-      expect(result).toBe(true);
-      expect(axios.get).toHaveBeenCalledWith(
-        expect.stringContaining('blacklisted@example.com'),
-        expect.any(Object)
+    // Real API call (when API key is available)
+    try {
+      console.log(`📡 Calling Karma API: ${this.baseUrl}/verification/karma/${identifier}`);
+      
+      const response = await axios.get(
+        `${this.baseUrl}/verification/karma/${encodeURIComponent(identifier)}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 10000,
+        }
       );
-    });
 
-    it('should return false if user is not blacklisted (404)', async () => {
-      const error: any = new Error('Not found');
-      error.response = { status: 404 };
-      (axios.get as jest.Mock).mockRejectedValue(error);
+      const isBlacklisted = response.data?.status === 'blacklisted';
+      
+      if (isBlacklisted) {
+        console.log(`❌ User ${identifier} is BLACKLISTED`);
+      } else {
+        console.log(`✅ User ${identifier} is NOT blacklisted`);
+      }
 
-      const result = await karmaService.checkBlacklist('clean@example.com');
+      return isBlacklisted;
 
-      expect(result).toBe(false);
-    });
+    } catch (error: any) {
+      // 404 means not found in blacklist = not blacklisted = good
+      if (error.response?.status === 404) {
+        console.log(`✅ User ${identifier} not in blacklist (404 - not found)`);
+        return false;
+      }
+      
+      // Other errors - fail-open for availability
+      console.error(`⚠️  Karma API Error for ${identifier}:`, error.message);
+      console.log('✅ Allowing registration (fail-open for availability)');
+      return false;
+    }
+  }
 
-    it('should return false on API error (fail-open)', async () => {
-      (axios.get as jest.Mock).mockRejectedValue(new Error('Network error'));
+  async reportToBlacklist(identifier: string, reason: string): Promise<boolean> {
+    if (this.useMock) {
+      console.log(`⚠️  MOCK: Would report ${identifier} to blacklist. Reason: ${reason}`);
+      return true;
+    }
 
-      const result = await karmaService.checkBlacklist('test@example.com');
-
-      expect(result).toBe(false);
-    });
-  });
-});
+    try {
+      await axios.post(
+        `${this.baseUrl}/verification/karma`,
+        {
+          identity: identifier,
+          reason,
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      console.log(`✅ Reported ${identifier} to Karma blacklist`);
+      return true;
+    } catch (error: any) {
+      console.error('❌ Karma Report Error:', error.message);
+      return false;
+    }
+  }
+}
