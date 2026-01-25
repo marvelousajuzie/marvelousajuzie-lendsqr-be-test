@@ -1,4 +1,4 @@
-impimport { Router } from 'express';
+import { Router } from 'express';
 import { TransactionController } from '../controllers/transaction.controller';
 import { AuthMiddleware } from '../middleware/auth.middleware';
 
