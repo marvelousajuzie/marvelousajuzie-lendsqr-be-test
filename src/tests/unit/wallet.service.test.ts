@@ -1,12 +1,9 @@
-
-jest.mock('../../models/wallet.model');
-jest.mock('../../models/transaction.model');
-
 import { WalletService } from '../../services/wallet.service';
 import { WalletModel } from '../../models/wallet.model';
 import { TransactionModel } from '../../models/transaction.model';
 
-
+jest.mock('../../models/wallet.model');
+jest.mock('../../models/transaction.model');
 
 describe('WalletService - Core Wallet Operations', () => {
   let walletService: WalletService;

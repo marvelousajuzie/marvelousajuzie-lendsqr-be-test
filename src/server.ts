@@ -1,10 +1,8 @@
-
 import app from './app';
 import { config } from './config/env';
 import db from './config/database';
 
 const PORT = config.port;
-
 
 db.raw('SELECT 1')
   .then(() => {
@@ -17,10 +15,9 @@ db.raw('SELECT 1')
     });
   })
   .catch((error) => {
-    console.error('❌ Database connection failed:', error);
+    console.error('❌ Database connection failed:', error.message);
     process.exit(1);
   });
-
 
 process.on('SIGINT', async () => {
   console.log('\n🛑 Shutting down gracefully...');

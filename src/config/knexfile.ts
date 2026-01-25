@@ -11,18 +11,21 @@ const config: { [key: string]: Knex.Config } = {
       port: parseInt(process.env.DB_PORT || '3306'),
       user: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD || '',
-      database: process.env.DB_NAME || 'demo_credit_wallet',
+      database: process.env.DB_NAME || 'lendsqr_wallet',
+      ssl: process.env.DB_HOST?.includes('psdb.cloud') ? { rejectUnauthorized: true } : undefined,
     },
     migrations: {
       directory: './src/database/migrations',
       extension: 'ts',
+      tableName: 'knex_migrations',
     },
     pool: {
       min: 2,
       max: 10,
     },
+    acquireConnectionTimeout: 10000,
   },
-  
+
   production: {
     client: 'mysql2',
     connection: {
@@ -31,15 +34,16 @@ const config: { [key: string]: Knex.Config } = {
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
+      ssl: { rejectUnauthorized: true },
     },
     migrations: {
       directory: './dist/database/migrations',
       extension: 'js',
+      tableName: 'knex_migrations',
     },
     pool: {
       min: 2,
-      max: 10,
-      acquireTimeoutMillis: 30000,
+      max: 20,
     },
   },
 };
