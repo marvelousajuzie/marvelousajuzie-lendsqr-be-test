@@ -21,17 +21,17 @@ app.get('/', (req, res) => {
     documentation: {
       health: 'GET /health',
       authentication: {
-        register: 'POST /api/v1/auth/register',
-        login: 'POST /api/v1/auth/login'
+        register: 'POST /api/auth/register',
+        login: 'POST /api/auth/login'
       },
       wallet: {
-        balance: 'GET /api/v1/wallet/balance (Protected)',
-        fund: 'POST /api/v1/wallet/fund (Protected)',
-        withdraw: 'POST /api/v1/wallet/withdraw (Protected)',
-        transfer: 'POST /api/v1/wallet/transfer (Protected)'
+        balance: 'GET /api/wallet/balance (Protected)',
+        fund: 'POST /api/wallet/fund (Protected)',
+        withdraw: 'POST /api/wallet/withdraw (Protected)',
+        transfer: 'POST /api/wallet/transfer (Protected)'
       },
       transactions: {
-        history: 'GET /api/v1/transactions (Protected)'
+        history: 'GET /api/transactions (Protected)'
       }
     },
     links: {
@@ -52,9 +52,9 @@ app.get('/health', (req, res) => {
 });
 
 
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/wallet', walletRoutes);
-app.use('/api/v1/transactions', transactionRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/wallet', walletRoutes);
+app.use('/api/transactions', transactionRoutes);
 
 app.use(ErrorMiddleware.notFound);
 app.use(ErrorMiddleware.handle);
