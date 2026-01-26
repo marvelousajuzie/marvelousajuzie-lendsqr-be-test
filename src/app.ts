@@ -22,10 +22,8 @@ app.get('/', (req, res) => {
       health: 'GET /health',
       authentication: {
         register: 'POST /api/auth/register',
-        login: 'POST /api/auth/login'
       },
       wallet: {
-        balance: 'GET /api/wallet/balance (Protected)',
         fund: 'POST /api/wallet/fund (Protected)',
         withdraw: 'POST /api/wallet/withdraw (Protected)',
         transfer: 'POST /api/wallet/transfer (Protected)'

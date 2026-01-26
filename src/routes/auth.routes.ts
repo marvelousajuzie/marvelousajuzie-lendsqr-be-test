@@ -12,10 +12,6 @@ router.post(
   authController.register
 );
 
-router.post(
-  '/login',
-  ValidationMiddleware.validate(AuthValidator.login),
-  authController.login
-);
+
 
 export default router;
