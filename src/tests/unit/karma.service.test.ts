@@ -20,7 +20,6 @@ describe('KarmaService', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      // Even with errors, should return a boolean
       const result = await karmaService.checkBlacklist('anyuser@example.com');
       expect(typeof result).toBe('boolean');
     });
